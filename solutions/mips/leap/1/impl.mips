@@ -1,0 +1,39 @@
+## Registers
+
+# | Register | Usage     | Type    | Description                                      |
+# | -------- | --------- | ------- | ------------------------------------------------ |
+# | `$a0`    | input     | integer | year to check                                    |
+# | `$v0`    | output    | boolean | input is leap year (`0` = `false`, `1` = `true`) |
+# | `$t0-9`  | temporary | any     | used for temporary storage                       |
+
+.globl is_leap_year
+
+is_leap_year:
+        li   $t0, 4
+        div  $a0, $t0    # Divide input by 4
+        mfhi $t0         # Save remainder in $t0
+
+        li   $t1, 100
+        div  $a0, $t1    # Divide input by 100
+        mfhi $t1         # Save remainder in $t1
+
+        li   $t2, 400
+        div  $a0, $t2    # Divide input by 400
+        mfhi $t2         # Save remainder in $t2
+
+        # 1. $t0 must be 0 (year must be divisible by 4)
+        # 2. $t1 must not be 0 (year not divisible by 100)
+        # 3. $t2 must be 0 (year divisible by 400)
+        #
+        # If 1 is true and either 2 or 3 is true,
+        #   pass 1 (leap), otherwise 0 (not leap).
+
+        bne $t0, $zero, Nop    # goto Nop if $t0 != 0 (not divisible by 4)
+        bne $t1, $zero, Yep    # goto Yep if $t1 != 0 (not divisible by 100)
+        beq $t2, $zero, Yep    # goto Yep if $t3  = 0 (divisble by 400)
+        j   Nop
+
+   Yep: li  $v0, 1
+        jr  $ra
+   Nop: li  $v0, 0
+        jr  $ra
